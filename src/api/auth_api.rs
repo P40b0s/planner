@@ -1,13 +1,13 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 use axum::{extract::{ConnectInfo, Query, Request, State}, response::{IntoResponse, Response}, routing::{get, post}, Json, Router};
-use hyper::header::SET_COOKIE;
+use axum::http::header::SET_COOKIE;
 use serde::{Deserialize, Serialize};
 use tower_http::trace::{DefaultMakeSpan, TraceLayer};
-use crate::{state::AppState, AppError};
+use crate::{auth_route::{AuthRoute, AuthRouteParams}, state::AppState, Error};
 use utilites::http::HeaderMap;
-use db_service::SqlOperations;
-use super::{super::AuthRoute, super::Roles};
 use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
+
+use super::roles::Roles;
 
 const REFRESH_KEY_COOKIE: &'static str = "refresh";
 //TODO не создает сессию! проверить
@@ -15,7 +15,12 @@ pub fn authorization_and_users_router(app_state: Arc<AppState>) -> Router
 {   
     Router::new()      
         .route("/auth/login", post(login))
-        .auth_route("/auth/logout", post(close_session), Arc::clone(&app_state))
+        .auth_route("/auth/logout",
+         post(close_session),
+         Arc::clone(&app_state),
+            AuthRouteParams::new()
+                .with_roles(&[Roles::Administrator, Roles::User])
+                .with_audience(&["http://google.com"]))
         .auth_route("/auth/logout_full", post(close_sessions), Arc::clone(&app_state))
         .route("/auth/update_tokens", get(update_tokens))
         .auth_route("/users/create", post(create), Arc::clone(&app_state))
