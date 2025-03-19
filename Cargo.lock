@@ -87,7 +87,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "auth_service"
 version = "0.1.1"
-source = "git+https://github.com/P40b0s/auth_service.git#d8847f293aed60755ddad028ca3ebeec6bff00aa"
+source = "git+https://github.com/P40b0s/auth_service.git#680436ccf4d57a284ba0d86e893c46c0925afab2"
 dependencies = [
  "jwt_authentification",
  "logger 0.1.2 (git+https://github.com/P40b0s/logger.git)",

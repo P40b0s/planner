@@ -177,6 +177,7 @@ pub async fn update_access(
         new_cookie_jar.add("session-key", user.id.to_string());
         Ok((
             StatusCode::OK,
+            new_cookie_jar,
             new_access,
         ))
     }
@@ -215,11 +216,9 @@ pub async fn create_session(
         avatar: None
     };
      
-     let mut new_cookie_jar = Cookies::new();
-     new_cookie_jar.add("example_cookie", ip);
+    //куки устанавливаем только если их еще нет, при обновлении ключа они у клиента есть
     (
         StatusCode::OK,
-        new_cookie_jar,
         Json(authorized),
     )
 }
