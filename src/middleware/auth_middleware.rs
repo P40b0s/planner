@@ -1,17 +1,13 @@
-use std::boxed;
 use std::sync::Arc;
 use std::task::{Context, Poll};
-use axum::routing::Route;
 use hyper::header::AUTHORIZATION;
 use tower::{Service, Layer};
 use axum::http::{Request, Response, StatusCode};
 use futures::future::BoxFuture;
 use futures::FutureExt;
-use serde::{Deserialize, Serialize};
 use crate::state::AppState;
-use utilites::http::{BoxBody, HeaderMap};
 
-/// Структура middleware для проверки авторизации
+/// Слой для проверки авторизации пользователей
 #[derive(Clone)]
 pub struct AuthMiddleware<S> 
 {
@@ -77,8 +73,8 @@ where
                         {
                             //cut Bearer
                             let token_str =  token_str[7..].trim();
-                            let user_claims = state.services.jwt_service.validate(token_str, roles, audience).await;
-                            if let Ok(claims) = user_claims 
+                            let user_claims = state.services.jwt_service.validate(token_str, &*roles, &audience).await;
+                            if let Ok(_) = user_claims 
                             {
                                 inner.call(req).await
                             }
@@ -94,7 +90,6 @@ where
                         let response = error_response("Ошибка авторизации, заголовок Authorization имеет ошибки в кодировке");
                         Ok(response)
                     }
-                   
                 },
                 None => 
                 {
@@ -116,7 +111,7 @@ fn error_response<T: ToString>(body: T) -> Response<axum::body::Body>
     .unwrap()
 }
 
-/// Слой для добавления middleware
+/// Слой обработки маршрута с авторизацией
 #[derive(Clone)]
 pub struct AuthLayer 
 {

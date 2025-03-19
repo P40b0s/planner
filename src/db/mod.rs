@@ -6,30 +6,21 @@ use auth_service::{AuthorizationRepository, IAuthorizationRepository};
 pub use user_repository::{UserRepository, IUserRepository};
 
 use crate::Error;
-pub struct DatabaseService<UR: IUserRepository, AR: IAuthorizationRepository> 
+pub struct DatabaseService
 {
-    pub user_repository: UR,
-    pub authorization_repository: AR
+    pub user_repository: Box<dyn IUserRepository + Sync + Send>,
+    pub authorization_repository: AuthorizationRepository
 }
-impl DatabaseService<UserRepository, AuthorizationRepository>
+impl DatabaseService
 {
     pub async fn new(max_sessions_count: u8) -> Result<Self, Error>
     {
         let pool = Arc::new(connection::new_connection("planner").await?);
-        //создать все таблицы
-        //let r1 = sqlx::query(create_table_sql()).execute(&*pool).await;
-        // if r1.is_err()
-        // {
-        //     logger::error!("{}", r1.as_ref().err().unwrap());
-        //     let _ = r1?;
-        // };
+        let user_repository = UserRepository::new(pool.clone()).await?;
         Ok(Self
         {
             authorization_repository: AuthorizationRepository::new(max_sessions_count).await?,
-            user_repository: UserRepository 
-            { 
-                connection: pool
-            }
+            user_repository: Box::new(user_repository) 
         })
     }
 }

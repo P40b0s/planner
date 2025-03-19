@@ -15,7 +15,7 @@ pub struct Settings
 pub struct Services
 {
     /// Сервис базы данных предоставляет только пул соединений
-    pub database_service: crate::db::DatabaseService<UserRepository, AuthorizationRepository>,
+    pub database_service: crate::db::DatabaseService,
     ///JWT сервис предоставляет методы для валидации ключа доступа и создания нового ключа доступа
     pub jwt_service: auth_service::JwtService,
     // Сервис предоставляет доступ к отправке сообщений Server Send Events всем подключенным клиентам
