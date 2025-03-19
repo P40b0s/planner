@@ -1,8 +1,0 @@
-POST http://localhost:8888/auth/login HTTP/1.1
-Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJzdWIiOiJhY2Nlc3MiLCJleHAiOjE3MjI0MjQ5ODIsImlhdCI6MTcyMjQyNDY4MiwiaWQiOiI4MjliYjQyZS01ZDk2LTcyZGYtYTM2Ni0wYjhlMzdjMzFiNDUifQ.bMlX_JJy_cvotxx5ox_wzJ_V-vuT3vZsTr5nvsSIM_3RlePHMOss-wygBIDeLWKPedVXLE4VnLRnKJueDyYEDA
-
-{
-    "login": "admin_actual",
-    "password": "Actual->2024"
-}

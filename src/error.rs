@@ -1,3 +1,5 @@
+use axum::response::IntoResponse;
+use hyper::StatusCode;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -25,4 +27,14 @@ impl serde::Serialize for Error
 	{
 		serializer.serialize_str(self.to_string().as_ref())
 	}
+}
+
+impl IntoResponse for Error
+{
+    fn into_response(self) -> axum::response::Response 
+    {
+        let body = self.to_string();
+        // it's often easiest to implement `IntoResponse` by calling other implementations
+        (StatusCode::BAD_REQUEST, body).into_response()
+    }
 }

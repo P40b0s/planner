@@ -3,7 +3,7 @@ mod connection;
 use std::sync::Arc;
 
 use auth_service::{AuthorizationRepository, IAuthorizationRepository};
-pub use user_repository::{UserRepository, IUserRepository};
+pub use user_repository::{UserRepository, IUserRepository, UserDbo};
 
 use crate::Error;
 pub struct DatabaseService

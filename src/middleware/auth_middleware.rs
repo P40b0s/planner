@@ -122,7 +122,7 @@ pub struct AuthLayer
 
 impl AuthLayer 
 {
-    pub fn new<R: ToString>(state: Arc<AppState>, roles: &[R], audience: &[R]) -> Self 
+    pub fn new<R: ToString, A: ToString>(state: Arc<AppState>, roles: &[R], audience: &[A]) -> Self 
     {
         Self 
         {

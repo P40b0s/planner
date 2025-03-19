@@ -5,7 +5,7 @@ use auth_service::{AuthorizationRepository, IAuthorizationRepository};
 //use hyper::{header::AUTHORIZATION, HeaderMap};
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
-use crate::{db::{self, DatabaseService, IUserRepository, UserRepository}};
+use crate::{db::{self, DatabaseService, IUserRepository, UserRepository}, services::{self, UserService}};
 
 #[derive(Clone)]
 pub struct Settings
@@ -15,9 +15,10 @@ pub struct Settings
 pub struct Services
 {
     /// Сервис базы данных предоставляет только пул соединений
-    pub database_service: crate::db::DatabaseService,
+    pub database_service: Arc<crate::db::DatabaseService>,
     ///JWT сервис предоставляет методы для валидации ключа доступа и создания нового ключа доступа
     pub jwt_service: auth_service::JwtService,
+    pub user_service: UserService
     // Сервис предоставляет доступ к отправке сообщений Server Send Events всем подключенным клиентам
     //pub sse_service: SSEService,
 }
@@ -33,8 +34,10 @@ impl AppState
 {
     pub async fn initialize() -> Result<AppState, crate::Error>
     {
-        let database_service = super::db::DatabaseService::new(3).await?;
+        //TODO перенести сессии и время жизни ключа в настройки!
+        let database_service = Arc::new(super::db::DatabaseService::new(3).await?);
         let jwt_service = auth_service::JwtService::new();
+        let user_service = UserService::new(database_service.clone(), jwt_service.clone(), 5);
         //let pool = db_service.get_db_pool();
         //let sse_service = SSEService::new();
         //let jwt_service = JwtService::<Roles>::new();
@@ -46,6 +49,7 @@ impl AppState
         {
             database_service,
             jwt_service,
+            user_service
         };
         Ok(Self
         {
