@@ -9,18 +9,16 @@ serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 utilites = { version="*", git="https://github.com/P40b0s/help_utilites.git", package = "utilites", features = ["dates", "http"]}
 logger = { version="*", git="https://github.com/P40b0s/logger.git"}
-auth_service = { version="*", git="https://github.com/P40b0s/auth_service.git"}
+#auth_service = { version="*", git="https://github.com/P40b0s/auth_service.git"}
+jwt_authentification = { version="*", git="https://github.com/P40b0s/jwt_authentification.git"}
 thiserror="2.0.12"
 sqlx= {version = "0.8.3", features = ["sqlite", "runtime-tokio"] }
 uuid= {version="1.16.0", features = ["v7"] }
 axum= {version = "0.8.1", features = ["tokio", "json", "query"]}
-#слой для управления кукисами
-axum-extra={version = "0.10.0", features = ["cookie"]}
 tower = {version = "0.5.2", features = ["full"]}
 tower-http= {version = "0.6.2", features = ["cors", "fs", "trace"]}
 hyper = "1.6.0"
 futures = "0.3.31"
-cookie = "0.18.1"
 #fingerprint-rs = "0.1.0"
 
 

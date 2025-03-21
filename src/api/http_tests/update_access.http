@@ -1,2 +1,2 @@
 POST http://localhost:8888/auth/update_key HTTP/1.1
-Cookie: session-key=0195aec0-1f11-7692-b390-36010f5ace45
+

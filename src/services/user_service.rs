@@ -1,9 +1,10 @@
 use std::sync::Arc;
-
-use auth_service::{AuthorizationRepository, IAuthorizationRepository, JwtService};
+use jwt_authentification::JWT;
 use serde::{Deserialize, Serialize};
+use tokio::sync::Mutex;
+use crate::{db::{DatabaseService, UserDbo, Session, SessionRepository, ISessionRepository}, Error, Role};
 
-use crate::{db::{DatabaseService, IUserRepository, UserDbo}, Error, Roles};
+use super::JwtService;
 
 pub trait IUserService
 {
@@ -14,29 +15,31 @@ pub struct UserService
 {
     database_service: Arc<DatabaseService>,
     jwt_service: JwtService,
-    refresh_key_lifetime: i64
+    refresh_key_lifetime: u8,
+    access_key_lifetime: u8
 }
 impl UserService
 {
-    pub fn new(database_service: Arc<DatabaseService>, jwt_service: JwtService, refresh_key_lifetime: i64) -> Self
+    pub fn new(database_service: Arc<DatabaseService>, jwt_service: JwtService, access_key_lifetime: u8, refresh_key_lifetime: u8) -> Self
     {
         Self
         {
             database_service,
             jwt_service,
-            refresh_key_lifetime
+            refresh_key_lifetime,
+            access_key_lifetime
         }
     }
     ///Result -> (user_information, refresh_key)
     /// запускаем все это из хэндлера маршрута
-    pub async fn login(&self, username: &str, password: &str, ip_addr: &str, fingerprint: &str) -> Result<(UserInformation, uuid::Uuid), Error>
+    pub async fn login(&self, username: &str, password: &str, ip_addr: &str, fingerprint: &str) -> Result<(UserInformation, Session), Error>
     {
         let user_dbo = self.database_service.user_repository.login(username, password).await?;
-        let refresh_key = self.database_service.authorization_repository.create_session(&user_dbo.id, user_dbo.role, self.refresh_key_lifetime, ip_addr, fingerprint, Some(&user_dbo.audiences)).await?;
-        let access_key = self.jwt_service.gen_key(&user_dbo.id, user_dbo.role, &user_dbo.audiences).await;
+        let session = self.database_service.session_repository.create_session(&user_dbo.id,  self.refresh_key_lifetime, ip_addr, fingerprint).await?;
+        let access_key = self.jwt_service.gen_key(&user_dbo.id, user_dbo.role, &user_dbo.audiences, self.access_key_lifetime).await;
         let mut user: UserInformation = user_dbo.into();
         user.authorization_information.access_key = Some(access_key);
-        Ok((user, refresh_key))
+        Ok((user, session))
     }
 }
 
@@ -62,7 +65,7 @@ pub struct ExtendedUserInformation
 pub struct AuthorizationInformation
 {
     pub is_active: bool,
-    pub role: Roles,
+    pub role: Role,
     pub audiences: Vec<String>,
     pub access_key: Option<String>,
 }

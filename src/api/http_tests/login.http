@@ -3,5 +3,6 @@ Content-Type: application/json
 
 {
     "login": "TestUser3",
-    "password": "test_password2"
+    "password": "test_password2",
+    "fingerprint": "112233"
 }

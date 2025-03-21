@@ -1,7 +1,7 @@
 use std::{pin::Pin, sync::Arc};
 use serde::{Deserialize, Serialize};
 use sqlx::{sqlite::SqliteRow, FromRow, Pool, Row, Sqlite, SqlitePool};
-use crate::{error, Error, Roles};
+use crate::{error, Error, Role};
 
 pub struct UserRepository
 {
@@ -20,12 +20,18 @@ pub struct UserDbo
     pub surname_2: String,
     pub is_active: bool,
     pub avatar: Option<String>,
-    pub role: Roles,
+    pub role: Role,
     pub audiences: Vec<String>,
     pub information: InformationDbo
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct InformationDbo
+{
+    pub phones: Option<Vec<String>>,
+    pub email: Option<String>
+}
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SecurityDbo
 {
     pub phones: Option<Vec<String>>,
     pub email: Option<String>
@@ -97,6 +103,7 @@ pub trait IUserRepository
     fn update<'a>(&'a self, user: UserDbo) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send + 'a>>;
     fn create<'a>(&'a self, user: UserDbo) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send + 'a>>;
     fn username_is_busy<'a>(&'a self, username: &'a str) -> Pin<Box<dyn Future<Output = Result<bool, Error>> + Send + 'a>>;
+    fn get_user<'a>(&'a self, user_id: &'a uuid::Uuid) -> Pin<Box<dyn Future<Output = Result<UserDbo, Error>> + Send + 'a>>;
 }
 
 impl IUserRepository for UserRepository
@@ -119,7 +126,7 @@ impl IUserRepository for UserRepository
                 }
                 else
                 {
-                    Err(error::Error::AuthError(["Ошибка ввода пароля для `", username, "`"].concat()))
+                    Err(error::Error::AuthError(["Ошибка пароля для `", username, "`"].concat()))
                 }
             }
             else 
@@ -253,6 +260,26 @@ impl IUserRepository for UserRepository
             Ok(exists)
         })
     }
+    fn get_user<'a>(&'a self, user_id: &'a uuid::Uuid) -> Pin<Box<dyn Future<Output = Result<UserDbo, Error>> + Send + 'a>>
+    {
+        let connection = Arc::clone(&self.connection);
+        Box::pin(async move 
+        {
+            let sql = "SELECT id, username, password, name, surname_1, surname_2, is_active, avatar, role, json(audiences) as audiences, json(information) as information FROM users WHERE id = $1";
+            let user = sqlx::query_as::<_, UserDbo>(&sql)
+            .bind(user_id.to_string())
+            .fetch_one(&*connection).await;
+            if let Ok(user) = user
+            {
+               Ok(user)
+            }
+            else 
+            {
+                logger::error!("{}", user.err().unwrap());
+                Err(error::Error::AuthError(["Пользователь `", &user_id.to_string(), "` не найден"].concat()))
+            }
+        })
+    }
 }
 
 
@@ -277,7 +304,7 @@ mod tests
 {
     use std::sync::Arc;
 
-    use crate::{db::{connection, user_repository::{InformationDbo, UserDbo}, IUserRepository}, Roles};
+    use crate::{db::{connection, user_repository::{InformationDbo, UserDbo}, IUserRepository}, Role};
 
     
     #[tokio::test]
@@ -295,7 +322,7 @@ mod tests
             surname_2: "Тестов".to_owned(),
             is_active: true,
             avatar: None,
-            role: Roles::Administrator,
+            role: Role::Administrator,
             audiences: Vec::new(),
             information: InformationDbo
             {
@@ -327,7 +354,7 @@ mod tests
             surname_2: "Тестов".to_owned(),
             is_active: true,
             avatar: None,
-            role: Roles::Administrator,
+            role: Role::Administrator,
             audiences: Vec::new(),
             information: InformationDbo
             {
@@ -359,7 +386,7 @@ mod tests
             surname_2: "Тестов".to_owned(),
             is_active: true,
             avatar: None,
-            role: Roles::Administrator,
+            role: Role::Administrator,
             audiences: Vec::new(),
             information: InformationDbo
             {
@@ -392,7 +419,7 @@ mod tests
             surname_2: "Тестов-Обновленный".to_owned(),
             is_active: true,
             avatar: None,
-            role: Roles::User,
+            role: Role::User,
             audiences: vec!["www.111.ru".to_owned(), "www.222.ru".to_owned()],
             information: InformationDbo
             {
@@ -421,7 +448,7 @@ mod tests
             surname_2: "Тестов-Обновленный-Частично".to_owned(),
             is_active: true,
             avatar: Some("AVA".to_owned()),
-            role: Roles::Administrator,
+            role: Role::Administrator,
             audiences: Vec::new(),
             information: InformationDbo
             {
@@ -450,7 +477,7 @@ mod tests
             surname_2: "Тестов-Обновленный-Частично".to_owned(),
             is_active: true,
             avatar: Some("AVA".to_owned()),
-            role: Roles::User,
+            role: Role::User,
             audiences: Vec::new(),
             information: InformationDbo
             {

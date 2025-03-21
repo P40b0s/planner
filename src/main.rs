@@ -1,6 +1,7 @@
 mod auth_route;
 mod roles;
-pub use roles::Roles;
+mod configuration;
+pub use roles::Role;
 mod api;
 mod middleware;
 mod state;
