@@ -26,18 +26,11 @@ impl AppState
 {
     pub async fn initialize() -> Result<AppState, crate::Error>
     {
-        let cfg = Configuration::load();
+        let cfg = Arc::new(Configuration::load());
         let database_service = Arc::new(super::db::DatabaseService::new(cfg.max_sessions_count).await?);
         let jwt_service = JwtService::new();
-        let user_service = UserService::new(database_service.clone(), jwt_service.clone(), cfg.access_key_lifetime, cfg.session_life_time);
+        let user_service = UserService::new(database_service.clone(), jwt_service.clone(), cfg.clone());
       
-        //let pool = db_service.get_db_pool();
-        //let sse_service = SSEService::new();
-        //let jwt_service = JwtService::<Roles>::new();
-        //let user_service = UserService::new(db_service.get_db_pool()).await;
-        //let user_session_service = UserSessionService::new(db_service.get_db_pool()).await;
-        //let document_type_service = DocumentTypeService::new(db_service.get_db_pool()).await;
-        //let publication_service = PublicationService::new(db_service.get_db_pool()).await;
         let services = Services
         {
             database_service,
@@ -47,7 +40,7 @@ impl AppState
         Ok(Self
         {
             services,
-            configuration: Arc::new(cfg),
+            configuration: cfg,
             errors: Mutex::new(Vec::new())
         })
     }

@@ -16,13 +16,15 @@ pub enum Error
     AuthError(String),
 	#[error("Время сессии закончилось, необходимо зайти в систему заново")]
 	SessionExpired,
+    #[error("Пользователь с такими данными не найден")]
+	UserNotFound,
     #[error("Сессия не найдена")]
 	SessionNotFound,
     #[error(transparent)]
     JwtError(#[from] jwt_authentification::JwtError),
     #[error("Отпечаток сессии не совпадает, сессия будет удалена, необходимо зайти заново")]
     WrongFingerprintError(String),
-    #[error("Уникальный идетификатор клиента (fingerprint) не найден или имеет неверный формат")]
+    #[error("Уникальный идетификатор клиента не найден или имеет неверный формат")]
     FingerprintNotFound
 }
 
@@ -47,6 +49,11 @@ impl IntoResponse for Error
             {
                 cookie_remove_error_response(&message, &cookie_name)
             }
+            Error::SqlxError(e) => 
+            {
+                let body = "Ошибка базы данных";
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            },
             _ => 
             {
                 let body = self.to_string();

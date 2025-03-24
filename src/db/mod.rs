@@ -3,7 +3,7 @@ mod connection;
 mod session_repository;
 pub use session_repository::{Session, SessionRepository, ISessionRepository};
 use std::sync::Arc;
-pub use user_repository::{UserRepository, IUserRepository, UserDbo};
+pub use user_repository::{UserRepository, IUserRepository, UserDbo, InformationDbo};
 
 use crate::Error;
 pub struct DatabaseService

@@ -1,0 +1,33 @@
+:root 
+{
+  font-family: 'Source Code Pro';
+  font-size: 16px;
+  height: 100%;
+  width: 100%;
+  /* transition: background-color 0.5s ease, color 0.5s ease; */
+
+}
+
+@font-face 
+{
+  font-family: 'Source Code Pro';
+  src: url('./assets/fonts/SourceCodePro-Regular.ttf.woff')  format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face 
+{
+  font-family: 'Source Code Pro';
+  src: url('./assets/fonts/SourceCodePro-Bold.ttf.woff')  format('woff');
+  font-weight: bold;
+  font-style: normal;
+}
+
+[data-theme="lemon"]
+{
+  --primary: #9cdf88;
+  --on-primary: #a1e7a5;
+  --primary-container: #6f75c7;
+  --on-primary-container: #d396ad;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}

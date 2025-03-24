@@ -1,0 +1,249 @@
+{
+  "meta": {
+    "format": "httpie",
+    "version": "1.0.0",
+    "contentType": "workspace",
+    "schema": "https://schema.httpie.io/1.0.0.json",
+    "docs": "https://httpie.io/r/help/export-from-httpie",
+    "source": "HTTPie Desktop 2025.2.0"
+  },
+  "entry": {
+    "name": "local",
+    "icon": {
+      "name": "default",
+      "color": "gray"
+    },
+    "collections": [
+      {
+        "name": "auth_api",
+        "icon": {
+          "name": "rocket",
+          "color": "green"
+        },
+        "auth": {
+          "type": "none"
+        },
+        "requests": [
+          {
+            "name": "admin_route",
+            "url": "http://localhost:8888/auth/admin",
+            "method": "GET",
+            "headers": [
+              {
+                "name": "cookie",
+                "value": "session-key=0195b875-1811-7ce3-b2ad-428754a579bd; Path=/; Max-Age=432000",
+                "enabled": true
+              },
+              {
+                "name": "x-unique",
+                "value": "1233",
+                "enabled": true
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJzdWIiOiIwMTk1YWU3YS0zY2RhLTdiMTEtYWE2Yi00Njk5MmEzZTIwOWYiLCJleHAiOjE3NDI4MDM0NzYsImlhdCI6MTc0MjgwMzE3Niwicm9sZSI6IkFkbWluaXN0cmF0b3IiLCJhdWQiOm51bGx9.GdGlz6K6oCLYuSMMpZL3QKRKnlNyeU4sPnxE0_ixH-RJaaQvLjTT2d18fEcCXWKdl_8uX5ZIarwhHG2pMyTFCg",
+                "enabled": true
+              }
+            ],
+            "queryParams": [
+              {
+                "name": "x-unique",
+                "value": "1",
+                "enabled": false
+              },
+              {
+                "name": "cookie",
+                "value": "session-key=0195b875-1811-7ce3-b2ad-428754a579bd; Path=/; Max-Age=432000",
+                "enabled": false
+              }
+            ],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "none",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "update_user_self",
+            "url": "http://localhost:8888/auth/update_user_info",
+            "method": "POST",
+            "headers": [
+              {
+                "name": "cookie",
+                "value": "session-key=0195b875-1811-7ce3-b2ad-428754a579bd; Path=/; Max-Age=432000",
+                "enabled": true
+              },
+              {
+                "name": "x-unique",
+                "value": "1233",
+                "enabled": true
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJzdWIiOiIwMTk1YWU3YS0zY2RhLTdiMTEtYWE2Yi00Njk5MmEzZTIwOWYiLCJleHAiOjE3NDI4MDM0NzYsImlhdCI6MTc0MjgwMzE3Niwicm9sZSI6IkFkbWluaXN0cmF0b3IiLCJhdWQiOm51bGx9.GdGlz6K6oCLYuSMMpZL3QKRKnlNyeU4sPnxE0_ixH-RJaaQvLjTT2d18fEcCXWKdl_8uX5ZIarwhHG2pMyTFCg",
+                "enabled": true
+              }
+            ],
+            "queryParams": [
+              {
+                "name": "x-unique",
+                "value": "1",
+                "enabled": false
+              },
+              {
+                "name": "cookie",
+                "value": "session-key=0195b875-1811-7ce3-b2ad-428754a579bd; Path=/; Max-Age=432000",
+                "enabled": false
+              }
+            ],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n  \"id\": \"0195ae7a-3cda-7b11-aa6b-46992a3e209f\",\n  \"username\": \"TestUser3\",\n  \"name\": \"Тест\",\n  \"surname_1\": \"Тестович\",\n  \"surname_2\": \"Тестов\",\n  \"avatar\": null,\n  \"information\": {\n    \"phones\": [\n      \"111-444-555\",\n      \"222-555-999\"\n    ],\n    \"email\": \"aaa@bbb.ru\"\n  },\n  \"authorization_information\": {\n    \"is_active\": false,\n    \"role\": \"Administrator\",\n    \"audiences\": [],\n    \"access_key\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJzdWIiOiIwMTk1YWU3YS0zY2RhLTdiMTEtYWE2Yi00Njk5MmEzZTIwOWYiLCJleHAiOjE3NDI4MDM0NzYsImlhdCI6MTc0MjgwMzE3Niwicm9sZSI6IkFkbWluaXN0cmF0b3IiLCJhdWQiOm51bGx9.GdGlz6K6oCLYuSMMpZL3QKRKnlNyeU4sPnxE0_ixH-RJaaQvLjTT2d18fEcCXWKdl_8uX5ZIarwhHG2pMyTFCg\"\n  }\n}",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "login",
+            "url": "http://localhost:8888/auth/login ",
+            "method": "POST",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "application/json",
+                "enabled": true
+              },
+              {
+                "name": "x-unique",
+                "value": "12",
+                "enabled": true
+              }
+            ],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n    \"login\": \"TestUser3\",\n    \"password\": \"test_password2\",\n    \"fingerprint\": \"1\"\n}",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "update_key",
+            "url": "http://localhost:8888/auth/update_key",
+            "method": "GET",
+            "headers": [
+              {
+                "name": "cookie",
+                "value": "session-key=0195b875-1811-7ce3-b2ad-428754a579bd; Path=/; Max-Age=432000",
+                "enabled": true
+              },
+              {
+                "name": "x-unique",
+                "value": "1233",
+                "enabled": true
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJzdWIiOiIwMTk1YWU3YS0zY2RhLTdiMTEtYWE2Yi00Njk5MmEzZTIwOWYiLCJleHAiOjE3NDI1NTY3NDgsImlhdCI6MTc0MjU1NjQ0OCwicm9sZSI6IkFkbWluaXN0cmF0b3IiLCJhdWQiOm51bGx9.0X_QgzDZd9ujRlt-tCqNTmMLePdTh86C58oRApxDOXA-NN2jFIUiokgQulK6XoIsXEkObB3FUYYq-BzOB2BjAQ",
+                "enabled": false
+              }
+            ],
+            "queryParams": [
+              {
+                "name": "x-unique",
+                "value": "12",
+                "enabled": false
+              },
+              {
+                "name": "cookie",
+                "value": "session-key=0195b875-476d-7313-9c86-5ea7eb218c95; Path=/; Max-Age=432000",
+                "enabled": false
+              }
+            ],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "none",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "environments": [
+      {
+        "name": "Defaults",
+        "color": "gray",
+        "isDefault": true,
+        "isLocalOnly": false,
+        "variables": []
+      }
+    ],
+    "drafts": []
+  }
+}

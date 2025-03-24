@@ -1,0 +1,21 @@
+.main-container {
+  display: grid; 
+  grid-template-columns: 1fr; 
+  grid-template-rows: 2.8em 20fr 2.5em; 
+  gap: 0px 0px; 
+  grid-template-areas: 
+    "menu"
+    "main-body"
+    "footer"; 
+}
+.menu { grid-area: menu; }
+.footer { grid-area: footer; }
+.main-body { grid-area: main-body; }
+.modals 
+{ 
+  display: grid;
+  grid-row-start: 1;
+  grid-row-end: 3;
+  width: 100%;
+  height: 100%;
+}

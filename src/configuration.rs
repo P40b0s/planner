@@ -14,8 +14,6 @@ pub struct Configuration
     pub max_sessions_count: u8,
     ///cookie name with session key
     pub session_cookie_name: String,
-    ///every user request update session life time
-    pub update_session_time_on_request: bool,
     pub fingerprint_header_name: String,
     pub origins: Vec<String>,
     pub server_port: u16,
@@ -31,7 +29,6 @@ impl Default for Configuration
             max_sessions_count: 3,
             session_cookie_name: "session-key".to_string(),
             fingerprint_header_name: "x-unique".to_string(),
-            update_session_time_on_request: true,
             origins: vec![
                 "http://localhost:8888".to_owned()
             ],

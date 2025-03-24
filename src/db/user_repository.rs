@@ -30,12 +30,6 @@ pub struct InformationDbo
     pub phones: Option<Vec<String>>,
     pub email: Option<String>
 }
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SecurityDbo
-{
-    pub phones: Option<Vec<String>>,
-    pub email: Option<String>
-}
 
 fn create_table_sql<'a>() -> &'a str
 {

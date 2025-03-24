@@ -30,7 +30,7 @@ impl SessionRepository
 }
 pub trait ISessionRepository
 {
-    fn create_session(&self, user_id: &uuid::Uuid, refresh_key_lifetime_days: u8, ip_addr: &str, fingerprint: &str) -> impl std::future::Future<Output = Result<Session, Error>> + Send;
+    fn create_session(&self, user_id: &uuid::Uuid, refresh_key_lifetime_days: u8, ip_addr: &str, fingerprint: &str, device: &str) -> impl std::future::Future<Output = Result<Session, Error>> + Send;
     fn get_session(&self, session_id: &uuid::Uuid) -> impl std::future::Future<Output = Result<Session, Error>> + Send;
     fn insert_or_replace_session(&self, session: &SessionDbo) -> impl std::future::Future<Output = Result<(), Error>> + Send;
     fn sessions_count(&self, user_id: &uuid::Uuid) -> impl std::future::Future<Output = Result<u32, Error>> + Send;
@@ -49,6 +49,7 @@ fn create_table_sql<'a>() -> &'a str
     key_expiration_time TEXT NOT NULL,
     ip_addr TEXT NOT NULL,
     fingerprint TEXT,
+    device TEXT NOT NULL DEFAULT 'unknown',
     PRIMARY KEY(user_id, session_id)
     );
     CREATE INDEX IF NOT EXISTS 'session_idx' ON sessions (user_id, session_id);
@@ -62,7 +63,8 @@ enum SessionTable
     LoggedIn,
     KeyExpirationTime,
     IpAddr,
-    Fingerprint
+    Fingerprint,
+    Device
 }
 
 impl SessionTable
@@ -75,7 +77,8 @@ impl SessionTable
             SessionTable::LoggedIn.as_ref(), ",", 
             SessionTable::KeyExpirationTime.as_ref(), ",", 
             SessionTable::IpAddr.as_ref(), ",", 
-            SessionTable::Fingerprint.as_ref(), 
+            SessionTable::Fingerprint.as_ref(), ",", 
+            SessionTable::Device.as_ref()
         ].concat()
     }
 }
@@ -91,7 +94,8 @@ impl AsRef<str> for SessionTable
             SessionTable::LoggedIn => "logged_in",
             SessionTable::KeyExpirationTime => "key_expiration_time",
             SessionTable::IpAddr => "ip_addr",
-            SessionTable::Fingerprint => "fingerprint"
+            SessionTable::Fingerprint => "fingerprint",
+            SessionTable::Device => "device"
         }
     }
 }
@@ -105,7 +109,8 @@ pub struct SessionDbo
     pub logged_in: Date,
     pub key_expiration_time: Date,
     pub ip_addr: String,
-    pub fingerprint: String
+    pub fingerprint: String,
+    pub device: String
 }
 
 impl SessionDbo
@@ -119,6 +124,7 @@ impl SessionDbo
         .bind(self.key_expiration_time.to_string())
         .bind(&self.ip_addr)
         .bind(&self.fingerprint)
+        .bind(&self.device)
     }
 }
 
@@ -131,7 +137,8 @@ pub struct Session
     pub logged_in: Date,
     pub key_expiration_time: Date,
     pub ip_addr: String,
-    pub fingerprint: String
+    pub fingerprint: String,
+    pub device: String
 }
 impl Session
 {
@@ -152,7 +159,8 @@ impl Into<Session> for SessionDbo
             logged_in: self.logged_in,
             key_expiration_time: self.key_expiration_time,
             ip_addr: self.ip_addr,
-            fingerprint: self.fingerprint
+            fingerprint: self.fingerprint,
+            device: self.device
         }
     }
 }
@@ -167,7 +175,8 @@ impl Into<SessionDbo> for Session
             logged_in: self.logged_in,
             key_expiration_time: self.key_expiration_time,
             ip_addr: self.ip_addr,
-            fingerprint: self.fingerprint
+            fingerprint: self.fingerprint,
+            device: self.device
         }
     }
 }
@@ -183,7 +192,7 @@ impl FromRow<'_, SqliteRow> for SessionDbo
         let key_expiration_time: &str = row.try_get(SessionTable::KeyExpirationTime.as_ref())?;
         let ip_addr: &str = row.try_get(SessionTable::IpAddr.as_ref())?;
         let fingerprint: String = row.try_get(SessionTable::Fingerprint.as_ref())?;
-
+        let device: String = row.try_get(SessionTable::Device.as_ref())?;
         let obj = SessionDbo   
         {
             
@@ -192,7 +201,8 @@ impl FromRow<'_, SqliteRow> for SessionDbo
             logged_in: Date::parse(logged_in).unwrap(),
             key_expiration_time: Date::parse(key_expiration_time).unwrap(),
             ip_addr: ip_addr.to_owned(),
-            fingerprint
+            fingerprint,
+            device
         };
         Ok(obj)
     }
@@ -200,7 +210,7 @@ impl FromRow<'_, SqliteRow> for SessionDbo
 
 impl ISessionRepository for SessionRepository
 {
-    fn create_session(&self, user_id: &uuid::Uuid, refresh_key_lifetime_days: u8, ip_addr: &str, fingerprint: &str) -> impl std::future::Future<Output = Result<Session, Error>> + Send
+    fn create_session(&self, user_id: &uuid::Uuid, refresh_key_lifetime_days: u8, ip_addr: &str, fingerprint: &str, device: &str) -> impl std::future::Future<Output = Result<Session, Error>> + Send
     {
         Box::pin(async move 
         {
@@ -212,7 +222,7 @@ impl ISessionRepository for SessionRepository
             //sessions for current user not exists
             if current_sessions.is_empty()
             {
-                let session = new_session(user_id,  refresh_key_lifetime_days, ip_addr, fingerprint);
+                let session = new_session(user_id,  refresh_key_lifetime_days, ip_addr, fingerprint, device);
                 let _ = self.insert_or_replace_session(&session).await?;
                 Ok(session.into())
             }
@@ -232,7 +242,7 @@ impl ISessionRepository for SessionRepository
                 else 
                 {
                     self.delete_session(&old_session.session_id).await?;
-                    let session = new_session(user_id, refresh_key_lifetime_days, ip_addr, fingerprint);
+                    let session = new_session(user_id, refresh_key_lifetime_days, ip_addr, fingerprint, device);
                     let _ = self.insert_or_replace_session(&session).await?;
                     logger::warn!("Превышено максимальное количество одновременных сессий `{}` сессия `{}` заменена на {}", self.max_sessions_count, &old_session.session_id.to_string(), &session.session_id.to_string());
                     Ok(session.into())
@@ -252,7 +262,7 @@ impl ISessionRepository for SessionRepository
                 //add new session for this user
                 else 
                 {
-                    let session = new_session(user_id, refresh_key_lifetime_days, ip_addr, fingerprint);
+                    let session = new_session(user_id, refresh_key_lifetime_days, ip_addr, fingerprint, device);
                     let _ = self.insert_or_replace_session(&session).await?;
                     Ok(session.into())
                 }
@@ -303,7 +313,7 @@ impl ISessionRepository for SessionRepository
         Box::pin(async move 
         {
             let connection = Arc::clone(&self.connection);
-            let sql = ["INSERT OR REPLACE INTO sessions (", &SessionTable::get_all(), ") VALUES ($1, $2, $3, $4, $5, $6)"].concat();
+            let sql = ["INSERT OR REPLACE INTO sessions (", &SessionTable::get_all(), ") VALUES ($1, $2, $3, $4, $5, $6, $7)"].concat();
             let _ = session.bind_all(&sql)
             .execute(&*connection).await?;
             Ok(())
@@ -351,7 +361,7 @@ impl ISessionRepository for SessionRepository
     }
 }
 
-fn new_session(user_id: &uuid::Uuid, refresh_key_lifetime_days: u8, ip_addr: &str, fingerprint: &str) -> SessionDbo
+fn new_session(user_id: &uuid::Uuid, refresh_key_lifetime_days: u8, ip_addr: &str, fingerprint: &str, device: &str) -> SessionDbo
 {
     
     SessionDbo
@@ -361,7 +371,8 @@ fn new_session(user_id: &uuid::Uuid, refresh_key_lifetime_days: u8, ip_addr: &st
         logged_in: Date::now(),
         key_expiration_time: Date::now().add_minutes(get_key_update_in_days(refresh_key_lifetime_days)),
         ip_addr: ip_addr.to_owned(),
-        fingerprint: fingerprint.to_owned()
+        fingerprint: fingerprint.to_owned(),
+        device: device.to_owned()
     }
 }
 

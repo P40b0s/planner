@@ -24,21 +24,11 @@ impl ResponseSessionWrapper
     }
     pub fn to_cookie(&self) -> String
     {
-        let cookie: Cookie = if self.cfg.update_session_time_on_request
-        {
-            Cookie::build((&self.cfg.session_cookie_name, self.session.session_id.to_string()))
-            .max_age(Duration::days(self.cfg.session_life_time as i64))
-            .path("/")
-            .into()
-        }
-        else
-        {
-            let diff = &self.session.key_expiration_time - &Date::now();
-            Cookie::build((&self.cfg.session_cookie_name, self.session.session_id.to_string()))
-            .max_age(Duration::seconds(diff))
-            .path("/")
-            .into()
-        };
+        
+        let cookie: Cookie = Cookie::build((&self.cfg.session_cookie_name, self.session.session_id.to_string()))
+        .max_age(Duration::days(self.cfg.session_life_time as i64))
+        .path("/")
+        .into();
         cookie.to_string()
     }
 }
