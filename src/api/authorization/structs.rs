@@ -24,23 +24,21 @@ pub struct SessionPayload
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct UserInformationPayload
+pub struct UserContactsPayload
 {
-    pub phones: Option<Vec<String>>,
-    pub email: Option<String>
+    pub id: Option<String>,
+    pub contact_type: String,
+    pub contact: String
 }
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct UserUpdatePayload
 {
-    pub name: String,
-    pub surname_1: String,
-    pub surname_2: String,
+    pub username: String,
     pub is_active: bool,
-    pub avatar: Option<String>,
     pub role: Role,
     pub audiences: Vec<String>,
-    pub information: UserInformationPayload
+    pub contacts: Vec<UserContactsPayload>
 }
 
 
@@ -48,12 +46,8 @@ pub struct UserUpdatePayload
 pub struct AuthorizationInfo<R> where R: ToString + Serialize
 {
     pub id: String,
-    pub name: String,
-    pub surname_1: String,
-    pub surname_2: String,
     pub role: R,
     pub access_key: String,
     ///дата до которой годен рефреш токен
     pub expiration_date: String,
-    pub avatar: Option<String>
 }

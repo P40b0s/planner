@@ -4,7 +4,7 @@ use hyper::StatusCode;
 use jwt_authentification::JWT;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
-use crate::{configuration::Configuration, db::{DatabaseService, ISessionRepository, Session, SessionRepository, UserDbo}, Error, Role};
+use crate::{configuration::Configuration, db::{ContactDbo, DatabaseService, ISessionRepository, Session, SessionRepository, UserDbo}, Error, Role};
 
 use super::JwtService;
 
@@ -42,7 +42,10 @@ impl UserService
             {
                 let access_key = self.jwt_service.gen_key(&user.id, user.role, &user.audiences, self.configuration.access_key_lifetime).await;
                 let mut user: UserInformation = user.into();
-                user.authorization_information.access_key = Some(access_key);
+                if let Some(auth) = user.authorization_information.as_mut()
+                {
+                    auth.access_key = Some(access_key);
+                }
                 Ok((user, s))
             }
             else 
@@ -78,8 +81,9 @@ impl UserService
         }
     }
 
-    pub async fn update_user_info(&self, user: UserDbo) -> Result<impl IntoResponse, Error>
+    pub async fn update_user_info(&self, user: UserInformation) -> Result<impl IntoResponse, Error>
     {
+        let user = user.into();
         let result = self.database_service.user_repository.update_info(user).await;
         if let Ok(_) = result
         {
@@ -95,8 +99,9 @@ impl UserService
             Err(error)
         }
     }
-    pub async fn update_user_by_admin(&self, user: UserDbo) -> Result<impl IntoResponse, Error>
+    pub async fn update_user_by_admin(&self, user: UserInformation) -> Result<impl IntoResponse, Error>
     {
+        let user = user.into();
         let result = self.database_service.user_repository.update(user).await;
         if let Ok(_) = result
         {
@@ -190,18 +195,15 @@ pub struct UserInformation
 {
     pub id: String,
     pub username: String,
-    pub name: String,
-    pub surname_1: String,
-    pub surname_2: String,
-    pub avatar: Option<String>,
-    pub information: ExtendedUserInformation,
-    pub authorization_information: AuthorizationInformation
+    pub contacts: Vec<Contact>,
+    pub authorization_information: Option<AuthorizationInformation>
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ExtendedUserInformation
+pub struct Contact
 {
-    pub phones: Option<Vec<String>>,
-    pub email: Option<String>
+    pub id: String,
+    pub contact_type: String,
+    pub contact: String
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AuthorizationInformation
@@ -211,6 +213,30 @@ pub struct AuthorizationInformation
     pub audiences: Vec<String>,
     pub access_key: Option<String>,
 }
+impl Into<Contact> for ContactDbo
+{
+    fn into(self) -> Contact 
+    {
+        Contact 
+        { 
+            id: self.id.to_string(),
+            contact_type: self.contact_type,
+            contact: self.contact
+        }
+    }
+}
+fn to_contact_dbo(contact: Contact, user_id: &uuid::Uuid) -> ContactDbo
+{
+    ContactDbo 
+    { 
+        id: contact.id.parse().unwrap(),
+        user_id: *user_id,
+        contact_type: contact.contact_type,
+        verified: false,
+        contact: contact.contact
+    }
+}
+
 
 
 impl Into<UserInformation> for UserDbo
@@ -221,23 +247,51 @@ impl Into<UserInformation> for UserDbo
         {
             id: self.id.to_string(),
             username: self.username,
-            name: self.name,
-            surname_1: self.surname_1,
-            surname_2: self.surname_2,
-            avatar: self.avatar,
-            information: ExtendedUserInformation 
-            { 
-                phones: self.information.phones,
-                email: self.information.email
-            },
-            authorization_information: AuthorizationInformation 
+            contacts: self.contacts.into_iter().map(|m| m.into()).collect(),
+            authorization_information: Some(AuthorizationInformation 
             { 
                 is_active: self.is_active,
                 role: self.role,
                 audiences: self.audiences,
                 access_key: None
+            })
+        }
+    }
+}
+
+impl Into<UserDbo> for UserInformation
+{
+    fn into(self) -> UserDbo 
+    {
+        let user_id: uuid::Uuid =  self.id.parse().unwrap();
+        if let Some(auth) = self.authorization_information
+        {
+           
+            UserDbo
+            {
+                id: user_id,
+                username: self.username,
+                contacts: self.contacts.into_iter().map(|m| to_contact_dbo(m, &user_id)).collect(),
+                is_active: auth.is_active,
+                role: auth.role,
+                password: "".to_owned(),
+                audiences: auth.audiences
             }
         }
+        else 
+        {
+            UserDbo
+            {
+                id: user_id,
+                username: self.username,
+                contacts: self.contacts.into_iter().map(|m| to_contact_dbo(m, &user_id)).collect(),
+                is_active: false,
+                role: Role::NonPrivileged,
+                password: "".to_owned(),
+                audiences: Vec::new()
+            }
+        }
+       
     }
 }
 

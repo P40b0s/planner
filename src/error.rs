@@ -20,6 +20,12 @@ pub enum Error
 	UserNotFound,
     #[error("Сессия не найдена")]
 	SessionNotFound,
+    #[error("Ваш код для верификации был просрочен, попробуйте еще раз")]
+	VerificationCodeExpired,
+    #[error("Неверный код верификации, попробуйте еще раз")]
+	VerificationCodeWrong,
+    #[error("Запись верификации контакта не обнаружена, попробуйте запросить верификацию повторно")]
+	VerificationNotFound,
     #[error(transparent)]
     JwtError(#[from] jwt_authentification::JwtError),
     #[error("Отпечаток сессии не совпадает, сессия будет удалена, необходимо зайти заново")]
@@ -54,6 +60,11 @@ impl IntoResponse for Error
                 let body = "Ошибка базы данных";
                 (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
             },
+            Error::VerificationCodeExpired =>
+            {
+                let body = self.to_string();
+                (StatusCode::REQUEST_TIMEOUT, body).into_response()
+            }
             _ => 
             {
                 let body = self.to_string();

@@ -5,7 +5,7 @@ use axum::{body::Body, extract::{ConnectInfo, State}, response::{IntoResponse, R
 use hyper::StatusCode;
 use structs::{LoginPayload, PasswordPayload, SessionPayload, UserUpdatePayload};
 use tower_http::trace::{DefaultMakeSpan, TraceLayer};
-use crate::{db::{InformationDbo, UserDbo}, middleware::{AuthCheck, FingerprintExtractor, ResponseSessionWrapper, SessionExtension}, state::AppState, Error};
+use crate::{db::{UserDbo}, middleware::{AuthCheck, FingerprintExtractor, ResponseSessionWrapper, SessionExtension}, services::{AuthorizationInformation, Contact, UserInformation}, state::AppState, Error};
 use crate::Role;
 use crate::middleware::AuthLayer;
 
@@ -179,65 +179,78 @@ pub async fn update_user_info(
     Json(payload): Json<UserUpdatePayload>)
 -> Result<impl IntoResponse, Error>
 {
-    let user = app_state.services.database_service.user_repository.get_user(&session_wrapper.session.user_id).await;
-    if let Ok(user) = user
+    let update_user = |payload: UserUpdatePayload, user_id: uuid::Uuid|
     {
-        match user.role
+        let user = UserInformation
+        {
+            id: user_id.to_string(),
+            username: payload.username,
+            contacts: payload.contacts.into_iter().map(|c|
+            {
+                let id =c.id.unwrap_or(uuid::Uuid::now_v7().to_string());
+                Contact
+                {
+                    id,
+                    contact: c.contact,
+                    contact_type: c.contact_type
+                }
+            }).collect(),
+            
+            authorization_information: None,
+        };
+        user
+    };
+    if let Some(role) = session_wrapper.role.as_ref()
+    {
+        match role.parse().unwrap()
         {
             Role::Administrator =>
             {
-                let user = UserDbo
+                let user_info = UserInformation
                 {
-                    id: session_wrapper.session.user_id,
-                    username: String::new(),
-                    password: String::new(),
-                    name: payload.name,
-                    surname_1: payload.surname_1,
-                    surname_2: payload.surname_2,
-                    is_active: payload.is_active,
-                    avatar: payload.avatar,
-                    role: payload.role,
-                    audiences: payload.audiences,
-                    information: InformationDbo
+                    id: session_wrapper.session.user_id.to_string(),
+                    username: payload.username,
+                    contacts: payload.contacts.into_iter().map(|c|
                     {
-                        phones: payload.information.phones,
-                        email: payload.information.email
-                    }
+                        let id =c.id.unwrap_or(uuid::Uuid::now_v7().to_string());
+                        Contact
+                        {
+                            id,
+                            contact: c.contact,
+                            contact_type: c.contact_type
+                        }
+                    }).collect(),
+                    authorization_information: Some(AuthorizationInformation
+                    {
+                        is_active: payload.is_active,
+                        role: payload.role,
+                        audiences: payload.audiences,
+                        access_key: None
+                    }),
                 };
-                let result = app_state.services.user_service.update_user_by_admin(user).await?;
+                let result = app_state.services.user_service.update_user_by_admin(user_info).await?;
                 Ok(result.into_response())
             }
             _ => 
             {
-                let user = UserDbo
-                {
-                    id: session_wrapper.session.user_id,
-                    username: String::new(),
-                    password: String::new(),
-                    name: payload.name,
-                    surname_1: payload.surname_1,
-                    surname_2: payload.surname_2,
-                    is_active: false,
-                    avatar: payload.avatar,
-                    role: Role::NonPrivileged,
-                    audiences: Vec::new(),
-                    information: InformationDbo
-                    {
-                        phones: payload.information.phones,
-                        email: payload.information.email
-                    }
-                };
-                let result = app_state.services.user_service.update_user_info(user).await?;
+                let user_info = update_user(payload, session_wrapper.session.user_id.clone());
+                let result = app_state.services.user_service.update_user_info(user_info).await?;
                 Ok(result.into_response())
             }
         }
     }
     else 
     {
-        let error = user.err().unwrap();
-        logger::error!("{}", error.to_string());
-        Err(error)    
+        let user_info = update_user(payload, session_wrapper.session.user_id.clone());
+        let result = app_state.services.user_service.update_user_info(user_info).await?;
+        Ok(result.into_response())
     }
+    // else 
+    // {
+    //     let error = user.err().unwrap();
+    //     logger::error!("{}", error.to_string());
+    //     Err(error)    
+    // }
 }
 
 pub async fn update_user_info_by_admin(

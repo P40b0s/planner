@@ -1893,9 +1893,9 @@ checksum = "917ce264624a4b4db1c364dcc35bfca9ded014d0a958cd47ad3e960e988ea51c"
 
 [[package]]
 name = "rustls-webpki"
-version = "0.103.0"
+version = "0.103.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0aa4eeac2588ffff23e9d7a7e9b3f971c5fb5b7ebc9452745e0c232c64f83b2f"
+checksum = "fef8b8769aaccf73098557a87cd1816b4f9c7c16811c9c77142aa695c16f2c03"
 dependencies = [
  "aws-lc-rs",
  "ring",
@@ -2724,7 +2724,7 @@ checksum = "b6c140620e7ffbb22c2dee59cafe6084a59b5ffc27a8859a5f0d494b5d52b6be"
 [[package]]
 name = "utilites"
 version = "0.1.0"
-source = "git+https://github.com/P40b0s/help_utilites.git#6191cb37047521a7d103c881de116c7318f683df"
+source = "git+https://github.com/P40b0s/help_utilites.git#b6b1b5ba90c3fab44b97371c5f0e4376411b7481"
 dependencies = [
  "base64ct",
  "blake2",

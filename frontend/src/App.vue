@@ -4,18 +4,26 @@
 //import MainView from './views/main.ts';
 import { ref } from "vue";
 import { darkTheme, lightTheme, NConfigProvider, NNotificationProvider, NModalProvider, type GlobalThemeOverrides, NGlobalStyle} from 'naive-ui';
-import { useTheme } from './composables/useTheme.ts';
+//import { useTheme } from './composables/useTheme.ts';
+
+import {useTheme} from '@composables/useTheme'
 //import Searcher from './components/Searcher.vue';
+import image from '@svg/bell.svg';
+import image2 from '../assets/svg/bell.svg';
 const greetMsg = ref("");
 const name = ref("");
 const { theme } = useTheme();
-const themeOverrides: GlobalThemeOverrides = {
-    Scrollbar: {
+const themeOverrides: GlobalThemeOverrides = 
+{
+    Scrollbar: 
+    {
         width: '8px',
         railInsetHorizontal: '6px 6px 6px auto',
         borderRadius: 2,
     },
-    }
+}
+console.log(process.env.PUBLIC_FOO);
+console.log(image);
 
 //:theme-overrides="themeOverrides"
 </script>
@@ -27,6 +35,8 @@ n-config-provider(:theme="theme" :theme-overrides="themeOverrides")
         .header
           .header-left 
             div asjdjashdjkahsdkjhaksjdhkajshdkjashdjk
+            img(:src="image")
+            img(:src="image2")
           .header-right
         .main-content
       n-global-style

@@ -81,7 +81,8 @@ impl IntoResponseParts for ResponseSessionWrapper
 pub struct SessionExtension
 {
     pub session: Arc<Session>,
-    pub fingerprint: Arc<String>
+    pub fingerprint: Arc<String>,
+    pub role: Arc<Option<String>>
 }
 impl<S> FromRequestParts<S> for SessionExtension
 where

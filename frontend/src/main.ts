@@ -1,4 +1,7 @@
 import { createApp } from "vue";
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import App from "./App.vue";
-createApp(App).mount("#app");
+import emitter from './services/emitter'
+const app = createApp(App);
+app.provide('emitter', emitter);
+app.mount("#app");

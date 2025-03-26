@@ -92,7 +92,8 @@ where
                         let session_extension = SessionExtension
                         {
                             session: Arc::new(session.unwrap()),
-                            fingerprint: Arc::new(fingerprint)
+                            fingerprint: Arc::new(fingerprint),
+                            role: Arc::new(None)
                         };
                         let ext = req.extensions_mut();
                         ext.insert(session_extension);
@@ -100,17 +101,20 @@ where
                     }
                     else
                     {
-                        if let Err(e) = bearer_checker(headers, session.as_ref().unwrap(), state, roles, audience).await
+                        let bearer = bearer_checker(headers, session.as_ref().unwrap(), state, roles, audience).await;
+                        if let Err(e) = bearer
                         {
                             Ok(e)
                         }
                         else
                         {
+                            let role = bearer.unwrap();
                             let fingerprint = fingerprint.unwrap().to_owned();
                             let session_extension = SessionExtension
                             {
                                 session: Arc::new(session.unwrap()),
-                                fingerprint: Arc::new(fingerprint)
+                                fingerprint: Arc::new(fingerprint),
+                                role: Arc::new(role)
                             };
                             let ext = req.extensions_mut();
                             ext.insert(session_extension);
@@ -208,7 +212,7 @@ async fn cookie_checker(headers: &HeaderMap, state: Arc<AppState>) -> Result<Ses
     }
 }
 
-async fn bearer_checker(headers: &HeaderMap, session: &Session, state: Arc<AppState>, roles: Arc<Vec<String>>, audience: Arc<Vec<String>>) -> Result<(), Response<Body>>
+async fn bearer_checker(headers: &HeaderMap, session: &Session, state: Arc<AppState>, roles: Arc<Vec<String>>, audience: Arc<Vec<String>>) -> Result<Option<String>, Response<Body>>
 {
     if let Some(authorization) = headers.get(AUTHORIZATION)
     {
@@ -225,9 +229,9 @@ async fn bearer_checker(headers: &HeaderMap, session: &Session, state: Arc<AppSt
                 //cut Bearer
                 let token_str =  token_str[7..].trim();
                 let user_claims = state.services.jwt_service.validate(&session.user_id, token_str, &*roles, &audience).await;
-                if let Ok(_) = user_claims 
+                if let Ok(claims) = user_claims 
                 {
-                    Ok(())
+                    Ok(claims.role().cloned())
                 }
                 else
                 {

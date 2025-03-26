@@ -5,8 +5,9 @@
   "version": "0.1.1",
   "type": "module",
   "scripts": {
-    "build": "tsc && rsbuild build",
-    "serve": "rsbuild dev"
+    "build": "vue-tsc & rsbuild build",
+    "serve": "vue-tsc & rsbuild dev",
+    "tsc": "vue-tsc"
   },
   "dependencies": {
     "naive-ui": "2.41.0",
@@ -15,14 +16,15 @@
     "ts-pattern": "^5.2.0",
     "uuidv7": "1.0.2",
     "vue": "3.5.13",
-    "vue-virtual-scroller": "2.0.0-beta.8",
-    "vue-router": "4.5.0"
+    "vue-router": "4.5.0",
+    "vue-virtual-scroller": "2.0.0-beta.8"
   },
   "devDependencies": {
     "@rsbuild/core": "1.2.19",
     "@rsbuild/plugin-pug": "1.0.2",
     "@rsbuild/plugin-sass": "1.2.2",
     "@rsbuild/plugin-vue": "1.0.7",
+    "@types/node": "^22.13.13",
     "@vicons/material": "0.13.0",
     "@vue/language-plugin-pug": "2.2.8",
     "pug": "^3.0.3",
@@ -30,7 +32,6 @@
     "typescript": "5.8.2",
     "vue-tsc": "^2.2.8"
   },
-
   "engines": {
     "node": "22",
     "pnpm": "^10"
